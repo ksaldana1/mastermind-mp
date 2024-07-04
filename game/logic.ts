@@ -33,16 +33,70 @@ type WithUser<T> = T & { user: User };
 
 export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
 
+export const COLORS = [
+  "red",
+  "yellow",
+  "green",
+  "blue",
+  "orange",
+  "purple",
+] as const;
+
+export type Color = (typeof COLORS)[number];
+
+export const COLUMNS_COUNT = 4;
+export const ROWS_COUNT = 10;
+
+export type Code = [Color, Color, Color, Color];
+
+export type Cell = Color | null;
+export type Row = [Cell, Cell, Cell, Cell];
+
+export type RowState =
+  | { type: "UNLOCKED"; state: Row }
+  | { type: "LOCKED"; state: Code };
+
+export type Board = [
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState,
+  RowState
+];
+
 // This interface holds all the information about your game
 export interface GameState extends BaseGameState {
   target: number;
+  board: Board;
+}
+
+export function generateCode(): Code {
+  return new Array(COLUMNS_COUNT).fill(true).map(() => {
+    const randomIndex = Math.floor(Math.random() * COLORS.length);
+    return COLORS[randomIndex];
+  }) as Code;
+}
+
+export function generateBoard(): Board {
+  return new Array(ROWS_COUNT).fill(true).map(() => {
+    return {
+      type: "UNLOCKED",
+      state: [null, null, null, null],
+    };
+  }) as Board;
 }
 
 // This is how a fresh new game starts out, it's a function so you can make it dynamic!
 // In the case of the guesser game we start out with a random target
-export const initialGame = () => ({
+export const initialGame = (): GameState => ({
   users: [],
   target: Math.floor(Math.random() * 100),
+  board: generateBoard(),
   log: addLog("Game Created!", []),
 });
 
