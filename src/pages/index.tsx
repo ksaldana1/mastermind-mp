@@ -127,6 +127,18 @@ export default function Home() {
             <p className="font-bold hover:animate-wiggle">Join the party🎉</p>
           </button>
         </form>
+        <div className="mt-4">
+          <div>Lobbies:</div>
+          <ul>
+            {Object.entries(rooms).map(([key, value]) => {
+              return (
+                <li key={key}>
+                  {key}: {value}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     </Layout>
   );

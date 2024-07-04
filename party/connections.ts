@@ -5,7 +5,7 @@ export default class Rooms implements Party.Server {
   constructor(readonly room: Party.Room) {}
 
   async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
-    connection.socket.send(JSON.stringify(this.connections));
+    connection.send(JSON.stringify(this.connections));
   }
 
   async onRequest(request: Party.Request) {
