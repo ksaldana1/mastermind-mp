@@ -26,6 +26,6 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "partykit": "0.0.10"
+    "partykit": "0.0.107"
   }
 }

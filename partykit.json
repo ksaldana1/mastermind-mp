@@ -1,4 +1,8 @@
 {
-  "name": "partykit-starter-party",
-  "main": "party/index.ts"
+  "name": "multiparty",
+  "main": "party/index.ts",
+  "parties": {
+    "rooms": "party/connections.ts"
+  }
 }
+

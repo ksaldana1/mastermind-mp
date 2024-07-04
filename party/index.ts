@@ -10,24 +10,21 @@ interface ServerMessage {
 export default class Server implements Party.Server {
   private gameState: GameState;
 
-  constructor(readonly party: Party.Party) {
+  constructor(readonly room: Party.Room) {
     this.gameState = initialGame();
-    console.log("Room created:", party.id);
+    console.log("Room created:", room.id);
     console.log("Room target", this.gameState.target);
-    // party.storage.put;
   }
-  onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
-    // A websocket just connected!
-
-    // let's send a message to the connection
-    // conn.send();
+  async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
+    await this.updateConnections("connect", connection);
     this.gameState = gameUpdater(
       { type: "UserEntered", user: { id: connection.id } },
       this.gameState
     );
-    this.party.broadcast(JSON.stringify(this.gameState));
+    this.room.broadcast(JSON.stringify(this.gameState));
   }
-  onClose(connection: Party.Connection) {
+  async onClose(connection: Party.Connection) {
+    await this.updateConnections("disconnect", connection);
     this.gameState = gameUpdater(
       {
         type: "UserExit",
@@ -35,7 +32,7 @@ export default class Server implements Party.Server {
       },
       this.gameState
     );
-    this.party.broadcast(JSON.stringify(this.gameState));
+    this.room.broadcast(JSON.stringify(this.gameState));
   }
   onMessage(message: string, sender: Party.Connection) {
     const action: ServerAction = {
@@ -44,7 +41,26 @@ export default class Server implements Party.Server {
     };
     console.log(`Received action ${action.type} from user ${sender.id}`);
     this.gameState = gameUpdater(action, this.gameState);
-    this.party.broadcast(JSON.stringify(this.gameState));
+    this.room.broadcast(JSON.stringify(this.gameState));
+  }
+  async updateConnections(
+    type: "connect" | "disconnect",
+    connection: Party.Connection
+  ) {
+    // get handle to a shared room instance of the "connections" party
+    const connectionsParty = this.room.context.parties.rooms;
+    const connectionsRoomId = "active-connections";
+    const connectionsRoom = connectionsParty.get(connectionsRoomId);
+
+    // notify room by making an HTTP POST request
+    await connectionsRoom.fetch({
+      method: "POST",
+      body: JSON.stringify({
+        type,
+        connectionId: connection.id,
+        roomId: this.room.id,
+      }),
+    });
   }
 }
 

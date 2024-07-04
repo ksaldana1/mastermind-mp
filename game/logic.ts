@@ -122,7 +122,6 @@ export const gameUpdater = (
 
   // Every action has a user field that represent the user who dispatched the action,
   // you don't need to add this yourself
-  console.log(state);
   switch (action.type) {
     case "UserEntered":
       return {

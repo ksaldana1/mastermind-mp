@@ -1,5 +1,6 @@
 import Game from "@/components/Game";
 import Layout from "@/components/Layout";
+import { useLobbyCount } from "@/hooks/useLobbyCount";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -21,6 +22,9 @@ export default function Home() {
     roomId: null,
     showGame: false,
   });
+
+  const { rooms } = useLobbyCount();
+  console.log(rooms);
 
   const router = useRouter();
 
