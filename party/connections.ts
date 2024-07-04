@@ -1,13 +1,13 @@
 import type * as Party from "partykit/server";
 
 export default class Rooms implements Party.Server {
-  connections: Record<string, number> | undefined;
+  connections: Record<string, number> = {};
   constructor(readonly room: Party.Room) {}
 
   async onRequest(request: Party.Request) {
     // read from storage
-    this.connections =
-      this.connections ?? (await this.room.storage.get("connections")) ?? {};
+    // this.connections =
+    // this.connections ?? (await this.room.storage.get("connections")) ?? {};
     // update connection count
     if (request.method === "POST") {
       const update = await request.json<{
