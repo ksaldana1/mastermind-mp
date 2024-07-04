@@ -101,7 +101,16 @@ export const initialGame = (): GameState => ({
 });
 
 // Here are all the actions we can dispatch for a user
-type GameAction = { type: "guess"; guess: number };
+export type GameAction =
+  | { type: "guess"; guess: number }
+  | {
+      type: "UPDATE_CELL";
+      payload: {
+        row: number;
+        column: number;
+        color: Color;
+      };
+    };
 
 export const gameUpdater = (
   action: ServerAction,
@@ -113,6 +122,7 @@ export const gameUpdater = (
 
   // Every action has a user field that represent the user who dispatched the action,
   // you don't need to add this yourself
+  console.log(state);
   switch (action.type) {
     case "UserEntered":
       return {
@@ -147,5 +157,16 @@ export const gameUpdater = (
           ),
         };
       }
+    case "UPDATE_CELL":
+      return {
+        ...state,
+        board: state.board.with(action.payload.row, {
+          type: "UNLOCKED",
+          state: state.board[action.payload.row].state.with(
+            action.payload.column,
+            action.payload.color
+          ) as Row,
+        }) as Board,
+      };
   }
 };

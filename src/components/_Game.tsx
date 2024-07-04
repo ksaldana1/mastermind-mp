@@ -1,5 +1,7 @@
-import "./App.css";
-import { useMemo, useState } from "react";
+import { useGameRoom } from "@/hooks/useGameRoom";
+import { Dispatch, useMemo, useState } from "react";
+import type { Board, GameAction } from "../../game/logic";
+import { Color, COLORS, RowState } from "../../game/logic";
 
 /*
   Render a board - 4x10 - 2x2 grid next to each row for result comparison
@@ -13,76 +15,84 @@ import { useMemo, useState } from "react";
   Go to next row until no more guesses (10 total)
 */
 
-const COLORS = ["red", "yellow", "green", "blue", "orange", "purple"] as const;
-type Color = (typeof COLORS)[number];
-
-const COLUMNS_COUNT = 4;
-const ROWS_COUNT = 10;
-
-function generateRandomSequence(): [Color, Color, Color, Color] {
-  return new Array(COLUMNS_COUNT).fill(true).map(() => {
-    const randomIndex = Math.floor(Math.random() * COLORS.length);
-    return COLORS[randomIndex];
-  }) as [Color, Color, Color, Color];
+interface GameProps {
+  username: string;
+  roomId: string;
 }
 
-export default function App() {
+export default function Game({ username, roomId }: GameProps) {
   const [currentColor, setCurrentColor] = useState<Color>("red");
-  const answer = useMemo(() => {
-    return generateRandomSequence();
-  }, []);
+  const { gameState, dispatch } = useGameRoom(username, roomId);
+
+  if (!gameState) {
+    return null;
+  }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100%",
-      }}
-    >
-      <div>answer: {answer.join(" ")}</div>
-      <Board currentColor={currentColor} />
+    <div className="flex flex-col gap-4 items-center justify-center h-full">
+      <Board
+        currentColor={currentColor}
+        board={gameState.board}
+        dispatch={dispatch}
+      />
       <Picker setCurrentColor={setCurrentColor} />
       currentColor: {currentColor}
     </div>
   );
 }
 
-function Board({ currentColor }: { currentColor: Color }) {
+function Board({
+  currentColor,
+  board,
+  dispatch,
+}: {
+  currentColor: Color;
+  board: Board;
+  dispatch: Dispatch<GameAction>;
+}) {
   return (
-    <div className="parent">
-      {new Array(ROWS_COUNT).fill(true).map((_, i) => (
-        <Row key={i} selectedColor={currentColor} />
+    <div className="border-black border">
+      {board.map((row, i) => (
+        <Row
+          key={i}
+          index={i}
+          row={row}
+          selectedColor={currentColor}
+          dispatch={dispatch}
+        />
       ))}
     </div>
   );
 }
 
-type Row = [CellColor, CellColor, CellColor, CellColor];
-type CellColor = Color | "white";
-
-function Row({ selectedColor }: { selectedColor: Color }) {
-  const [cells, setSelectedCells] = useState<Row>([
-    "white",
-    "white",
-    "white",
-    "white",
-  ]);
-
-  const setColor = (index: number) => {
-    const copy = [...cells] as Row;
-    // ['white', 'whte', 'white', 'white']
-    copy[index] = selectedColor;
-    setSelectedCells(copy);
-  };
-
+function Row({
+  selectedColor,
+  row,
+  index,
+  dispatch,
+}: {
+  selectedColor: Color;
+  dispatch: Dispatch<GameAction>;
+  row: RowState;
+  index: number;
+}) {
   return (
-    <div className="row">
-      {cells.map((_, i) => (
-        <Cell key={i} color={cells[i]} setCurrentColor={() => setColor(i)} />
+    <div className="flex">
+      {row.state.map((cell, i) => (
+        <Cell
+          key={i}
+          color={cell ?? "white"}
+          setColor={() =>
+            dispatch({
+              type: "UPDATE_CELL",
+              payload: {
+                color: selectedColor,
+                column: i,
+                row: index,
+              },
+            })
+          }
+        />
       ))}
     </div>
   );
@@ -90,16 +100,16 @@ function Row({ selectedColor }: { selectedColor: Color }) {
 
 function Cell({
   color,
-  setCurrentColor,
+  setColor,
 }: {
-  color: CellColor;
-  setCurrentColor: () => void;
+  color: Color | "white";
+  setColor: () => void;
 }) {
   return (
     <div
-      className="child"
+      className="child h-6 w-24 border-black border"
       style={{ backgroundColor: color }}
-      onClick={setCurrentColor}
+      onClick={setColor}
     />
   );
 }
