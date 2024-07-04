@@ -6,8 +6,8 @@ export default class Rooms implements Party.Server {
 
   async onRequest(request: Party.Request) {
     // read from storage
-    // this.connections =
-    // this.connections ?? (await this.room.storage.get("connections")) ?? {};
+    this.connections =
+      this.connections ?? (await this.room.storage.get("connections")) ?? {};
     // update connection count
     if (request.method === "POST") {
       const update = await request.json<{
