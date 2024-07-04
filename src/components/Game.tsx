@@ -1,95 +1,134 @@
-import { useState } from "react";
 import { useGameRoom } from "@/hooks/useGameRoom";
-import { stringToColor } from "@/utils";
+import { Dispatch, useMemo, useState } from "react";
+import type { Board, GameAction } from "../../game/logic";
+import { Color, COLORS, RowState } from "../../game/logic";
+
+/*
+  Render a board - 4x10 - 2x2 grid next to each row for result comparison
+  Render a piece picker - colors (red, yellow, green, blue, orange, purple)
+  Generate a random sequence of colors at beginning of round
+
+  Place a piece - with a chosen color place piece on a row
+  Check guess once 4 selections made - compare with random guess
+  Render the result comparison 
+
+  Go to next row until no more guesses (10 total)
+*/
 
 interface GameProps {
   username: string;
   roomId: string;
 }
 
-const Game = ({ username, roomId }: GameProps) => {
+export default function Game({ username, roomId }: GameProps) {
+  const [currentColor, setCurrentColor] = useState<Color>("red");
   const { gameState, dispatch } = useGameRoom(username, roomId);
 
-  // Local state to use for the UI
-  const [guess, setGuess] = useState<number>(0);
-
-  // Indicated that the game is loading
-  if (gameState === null) {
-    return (
-      <p>
-        <span className="transition-all w-fit inline-block mr-4 animate-bounce">
-          🎲
-        </span>
-        Waiting for server...
-      </p>
-    );
+  if (!gameState) {
+    return null;
   }
 
-  const handleGuess = (event: React.SyntheticEvent) => {
-    event.preventDefault();
-    // Dispatch allows you to send an action!
-    // Modify /game/logic.ts to change what actions you can send
-    dispatch({ type: "guess", guess: guess });
-  };
-
   return (
-    <>
-      <h1 className="text-2xl border-b border-yellow-400 text-center relative">
-        🎲 Guess the number!
-      </h1>
-      <section>
-        <form
-          className="flex flex-col gap-4 py-6 items-center"
-          onSubmit={handleGuess}
-        >
-          <label
-            htmlFor="guess"
-            className="text-7xl font-bold text-stone-50 bg-black rounded p-2 text-"
-          >
-            {guess}
-          </label>
-          <input
-            type="range"
-            name="guess"
-            id="guess"
-            className="opacity-70 hover:opacity-100 accent-yellow-400"
-            onChange={(e) => setGuess(Number(e.currentTarget.value))}
-            value={guess}
-          />
-          <button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:animate-wiggle">
-            Guess!
-          </button>
-        </form>
-
-        <div className="border-t border-yellow-400 py-2" />
-
-        <div className=" bg-yellow-100 flex flex-col p-4 rounded text-sm">
-          {gameState.log.map((logEntry, i) => (
-            <p key={logEntry.dt} className="animate-appear text-black">
-              {logEntry.message}
-            </p>
-          ))}
-        </div>
-
-        <h2 className="text-lg">
-          Players in room <span className="font-bold">{roomId}</span>
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {gameState.users.map((user) => {
-            return (
-              <p
-                className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent text-white"
-                style={{ backgroundColor: stringToColor(user.id + roomId) }}
-                key={user.id}
-              >
-                {user.id}
-              </p>
-            );
-          })}
-        </div>
-      </section>
-    </>
+    <div className="flex flex-col gap-4 items-center justify-center h-full">
+      <Board
+        currentColor={currentColor}
+        board={gameState.board}
+        dispatch={dispatch}
+      />
+      <Picker setCurrentColor={setCurrentColor} />
+      currentColor: {currentColor}
+    </div>
   );
-};
+}
 
-export default Game;
+function Board({
+  currentColor,
+  board,
+  dispatch,
+}: {
+  currentColor: Color;
+  board: Board;
+  dispatch: Dispatch<GameAction>;
+}) {
+  return (
+    <div className="border-black border">
+      {board.map((row, i) => (
+        <Row
+          key={i}
+          index={i}
+          row={row}
+          selectedColor={currentColor}
+          dispatch={dispatch}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Row({
+  selectedColor,
+  row,
+  index,
+  dispatch,
+}: {
+  selectedColor: Color;
+  dispatch: Dispatch<GameAction>;
+  row: RowState;
+  index: number;
+}) {
+  return (
+    <div className="flex">
+      {row.state.map((cell, i) => (
+        <Cell
+          key={i}
+          color={cell ?? "white"}
+          setColor={() =>
+            dispatch({
+              type: "UPDATE_CELL",
+              payload: {
+                color: selectedColor,
+                column: i,
+                row: index,
+              },
+            })
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+function Cell({
+  color,
+  setColor,
+}: {
+  color: Color | "white";
+  setColor: () => void;
+}) {
+  return (
+    <div
+      className="child h-6 w-24 border-black border"
+      style={{ backgroundColor: color }}
+      onClick={setColor}
+    />
+  );
+}
+
+interface PickerProps {
+  setCurrentColor: (color: Color) => void;
+}
+
+function Picker({ setCurrentColor }: PickerProps) {
+  return (
+    <div className="flex gap-1 h-8">
+      {COLORS.map((color) => (
+        <div
+          key={color}
+          className="w-8"
+          onClick={() => setCurrentColor(color)}
+          style={{ backgroundColor: color }}
+        ></div>
+      ))}
+    </div>
+  );
+}
