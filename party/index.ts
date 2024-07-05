@@ -1,6 +1,13 @@
 import type * as Party from "partykit/server";
 
-import { gameUpdater, initialGame, Action, ServerAction } from "../game/logic";
+import {
+  gameUpdater,
+  initialGame,
+  Action,
+  ServerAction,
+  generateCode,
+  Code,
+} from "../game/logic";
 import { GameState } from "../game/logic";
 
 export const CONNECTION_PARTY_NAME = "rooms";
@@ -8,15 +15,21 @@ export const CONNECTIONS_ROOM_ID = "active-connections";
 
 export default class Server implements Party.Server {
   private gameState: GameState;
+  private secret: Code;
 
   constructor(readonly room: Party.Room) {
     this.gameState = initialGame();
+    this.secret = generateCode();
     console.log("Room created:", room.id);
   }
   async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
     await this.updateConnections("connect", connection);
     this.gameState = gameUpdater(
-      { type: "USER_ENTERED", user: { id: connection.id } },
+      {
+        type: "USER_ENTERED",
+        user: { id: connection.id },
+        secret: this.secret,
+      },
       this.gameState
     );
     this.room.broadcast(JSON.stringify(this.gameState));
@@ -27,6 +40,7 @@ export default class Server implements Party.Server {
       {
         type: "USER_EXIT",
         user: { id: connection.id },
+        secret: this.secret,
       },
       this.gameState
     );
@@ -36,6 +50,7 @@ export default class Server implements Party.Server {
     const action: ServerAction = {
       ...(JSON.parse(message) as Action),
       user: { id: sender.id },
+      secret: this.secret,
     };
     console.log(`Received action ${action.type} from user ${sender.id}`);
     this.gameState = gameUpdater(action, this.gameState);

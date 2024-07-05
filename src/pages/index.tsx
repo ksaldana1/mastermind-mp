@@ -140,7 +140,7 @@ export default function Home() {
             id="roomid"
           />
           <button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:shadow-lg transition-all duration-200 hover:scale-125">
-            <p className="font-bold hover:animate-wiggle">Create Lobby 🎉</p>
+            <p className="font-bold">Create Lobby 🎉</p>
           </button>
         </form>
         <div className="mt-4">

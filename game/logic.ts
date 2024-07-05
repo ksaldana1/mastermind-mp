@@ -17,7 +17,7 @@ export type ServerAction = WithUser<DefaultAction> | WithUser<GameAction>;
 
 const MAX_LOG_SIZE = 4;
 
-type WithUser<T> = T & { user: User };
+type WithUser<T> = T & { user: User; secret: Code };
 
 export type DefaultAction = { type: "USER_ENTERED" } | { type: "USER_EXIT" };
 
@@ -40,8 +40,8 @@ export type Code = [Color, Color, Color, Color];
 export type Cell = Color | null;
 export type Row = [Cell, Cell, Cell, Cell];
 
-type Peg = "black" | "white";
-type Results = Peg[];
+export type Peg = "black" | "white";
+export type Results = Peg[];
 
 export type RowState =
   | { type: "UNLOCKED"; state: Row }
@@ -173,9 +173,35 @@ export const gameUpdater = (
     }
 
     case "GUESS": {
-      const { position } = action.payload;
+      const {
+        payload: { position },
+        secret,
+      } = action;
+      // noop if no secret are row is already locked
+      if (!secret || state.board[position.row].type === "LOCKED") {
+        return state;
+      }
+
+      const board = produce(state.board, (board) => {
+        board[position.row] = {
+          type: "LOCKED",
+          state: board[position.row].state.filter((x) => x !== null) as Code,
+          results: getResultPegs(
+            secret,
+            board[position.row].state.filter((x) => x !== null) as Code
+          ),
+        };
+      });
+
       return {
         ...state,
+        board,
+        log: addLog(
+          `user ${action.user.id} gussed ${board[position.row].state.join(
+            " "
+          )} on row ${position.row}`,
+          state.log
+        ),
       };
     }
   }

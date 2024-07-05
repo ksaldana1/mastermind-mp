@@ -1,6 +1,6 @@
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { Dispatch, useState } from "react";
-import type { Board, GameAction, User } from "../../game/logic";
+import type { Board, GameAction, User, Results } from "../../game/logic";
 import { Color, COLORS, RowState } from "../../game/logic";
 
 interface GameProps {
@@ -41,7 +41,7 @@ function Board({
   dispatch: Dispatch<GameAction>;
 }) {
   return (
-    <div className="border-black border">
+    <div className="flex flex-col gap-2">
       {board.map((row, i) => (
         <Row
           key={i}
@@ -84,6 +84,35 @@ function Row({
               },
             })
           }
+        />
+      ))}
+      {row.type === "UNLOCKED" ? (
+        <button
+          onClick={() =>
+            dispatch({
+              type: "GUESS",
+              payload: { position: { row: index } },
+            })
+          }
+          className="bg-green-700 hover:bg-green-900 text-white font-bold py-2 px-4 rounded h-6 flex items-center ml-2"
+        >
+          Guess
+        </button>
+      ) : (
+        <Result results={row.results} />
+      )}
+    </div>
+  );
+}
+
+function Result({ results }: { results: Results }) {
+  return (
+    <div className="flex items-center justify-center ms-2">
+      {results.map((color, i) => (
+        <div
+          key={i}
+          style={{ backgroundColor: color }}
+          className="w-3 h-3 border-black border rounded-full"
         />
       ))}
     </div>
