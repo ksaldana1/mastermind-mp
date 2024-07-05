@@ -9,14 +9,6 @@ export interface User {
   id: string;
 }
 
-interface BaseGameState {
-  users: User[];
-  log: {
-    dt: number;
-    message: string;
-  }[];
-}
-
 export type Action = DefaultAction | GameAction;
 
 export type ServerAction = WithUser<DefaultAction> | WithUser<GameAction>;
@@ -64,9 +56,13 @@ export type Board = [
 ];
 
 // This interface holds all the information about your game
-export interface GameState extends BaseGameState {
-  target: number;
+export interface GameState {
   board: Board;
+  users: User[];
+  log: {
+    dt: number;
+    message: string;
+  }[];
 }
 
 export function generateCode(): Code {
@@ -89,7 +85,6 @@ export function generateBoard(): Board {
 // In the case of the guesser game we start out with a random target
 export const initialGame = (): GameState => ({
   users: [],
-  target: Math.floor(Math.random() * 100),
   board: generateBoard(),
   log: addLog("Game Created!", []),
 });
@@ -110,12 +105,6 @@ export const gameUpdater = (
   action: ServerAction,
   state: GameState
 ): GameState => {
-  // This switch should have a case for every action type you add.
-
-  // "UserEntered" & "UserExit" are defined by default
-
-  // Every action has a user field that represent the user who dispatched the action,
-  // you don't need to add this yourself
   switch (action.type) {
     case "USER_ENTERED":
       return {
@@ -142,6 +131,10 @@ export const gameUpdater = (
             color
           ) as Row,
         }) as Board,
+        log: addLog(
+          `user ${action.user.id} placed ${color} on row ${position.row} column ${position.column}`,
+          state.log
+        ),
       };
   }
 };
