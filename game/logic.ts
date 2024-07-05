@@ -1,4 +1,3 @@
-// util for easy adding logs
 const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
   return [{ dt: new Date().getTime(), message: message }, ...logs].slice(
     0,
@@ -6,12 +5,10 @@ const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
   );
 };
 
-// If there is anything you want to track for a specific user, change this interface
 export interface User {
   id: string;
 }
 
-// Do not change this! Every game has a list of users and log of actions
 interface BaseGameState {
   users: User[];
   log: {
@@ -20,18 +17,15 @@ interface BaseGameState {
   }[];
 }
 
-// Do not change!
 export type Action = DefaultAction | GameAction;
 
-// Do not change!
 export type ServerAction = WithUser<DefaultAction> | WithUser<GameAction>;
 
-// The maximum log size, change as needed
 const MAX_LOG_SIZE = 4;
 
 type WithUser<T> = T & { user: User };
 
-export type DefaultAction = { type: "UserEntered" } | { type: "UserExit" };
+export type DefaultAction = { type: "USER_ENTERED" } | { type: "USER_EXIT" };
 
 export const COLORS = [
   "red",
@@ -101,16 +95,16 @@ export const initialGame = (): GameState => ({
 });
 
 // Here are all the actions we can dispatch for a user
-export type GameAction =
-  | { type: "guess"; guess: number }
-  | {
-      type: "UPDATE_CELL";
-      payload: {
-        row: number;
-        column: number;
-        color: Color;
-      };
+export type GameAction = {
+  type: "PIN_PLACED";
+  payload: {
+    position: {
+      row: number;
+      column: number;
     };
+    color: Color;
+  };
+};
 
 export const gameUpdater = (
   action: ServerAction,
@@ -123,47 +117,29 @@ export const gameUpdater = (
   // Every action has a user field that represent the user who dispatched the action,
   // you don't need to add this yourself
   switch (action.type) {
-    case "UserEntered":
+    case "USER_ENTERED":
       return {
         ...state,
         users: [...state.users, action.user],
         log: addLog(`user ${action.user.id} joined 🎉`, state.log),
       };
 
-    case "UserExit":
+    case "USER_EXIT":
       return {
         ...state,
         users: state.users.filter((user) => user.id !== action.user.id),
         log: addLog(`user ${action.user.id} left 😢`, state.log),
       };
 
-    case "guess":
-      if (action.guess === state.target) {
-        return {
-          ...state,
-          target: Math.floor(Math.random() * 100),
-          log: addLog(
-            `user ${action.user.id} guessed ${action.guess} and won! 👑`,
-            state.log
-          ),
-        };
-      } else {
-        return {
-          ...state,
-          log: addLog(
-            `user ${action.user.id} guessed ${action.guess}`,
-            state.log
-          ),
-        };
-      }
-    case "UPDATE_CELL":
+    case "PIN_PLACED":
+      const { position, color } = action.payload;
       return {
         ...state,
-        board: state.board.with(action.payload.row, {
+        board: state.board.with(position.row, {
           type: "UNLOCKED",
-          state: state.board[action.payload.row].state.with(
-            action.payload.column,
-            action.payload.color
+          state: state.board[position.row].state.with(
+            position.column,
+            color
           ) as Row,
         }) as Board,
       };

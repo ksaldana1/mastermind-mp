@@ -24,7 +24,6 @@ export default function Home() {
   });
 
   const { rooms } = useLobbyCount();
-  console.log(rooms);
 
   const router = useRouter();
 

@@ -1,5 +1,5 @@
 import { useGameRoom } from "@/hooks/useGameRoom";
-import { Dispatch, useMemo, useState } from "react";
+import { Dispatch, useState } from "react";
 import type { Board, GameAction } from "../../game/logic";
 import { Color, COLORS, RowState } from "../../game/logic";
 
@@ -84,11 +84,13 @@ function Row({
           color={cell ?? "white"}
           setColor={() =>
             dispatch({
-              type: "UPDATE_CELL",
+              type: "PIN_PLACED",
               payload: {
+                position: {
+                  column: i,
+                  row: index,
+                },
                 color: selectedColor,
-                column: i,
-                row: index,
               },
             })
           }

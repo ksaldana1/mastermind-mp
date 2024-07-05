@@ -18,7 +18,7 @@ export default class Server implements Party.Server {
   async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
     await this.updateConnections("connect", connection);
     this.gameState = gameUpdater(
-      { type: "UserEntered", user: { id: connection.id } },
+      { type: "USER_ENTERED", user: { id: connection.id } },
       this.gameState
     );
     this.room.broadcast(JSON.stringify(this.gameState));
@@ -27,7 +27,7 @@ export default class Server implements Party.Server {
     await this.updateConnections("disconnect", connection);
     this.gameState = gameUpdater(
       {
-        type: "UserExit",
+        type: "USER_EXIT",
         user: { id: connection.id },
       },
       this.gameState
