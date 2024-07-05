@@ -25,8 +25,7 @@ export default function Game({ username, roomId }: GameProps) {
           board={gameState.board}
           dispatch={dispatch}
         />
-        <Picker setCurrentColor={setCurrentColor} />
-        currentColor: {currentColor}
+        <Picker setCurrentColor={setCurrentColor} currentColor={currentColor} />
       </div>
     </div>
   );
@@ -109,18 +108,23 @@ function Cell({
 
 interface PickerProps {
   setCurrentColor: (color: Color) => void;
+  currentColor: Color;
 }
 
-function Picker({ setCurrentColor }: PickerProps) {
+function Picker({ setCurrentColor, currentColor }: PickerProps) {
   return (
-    <div className="flex gap-1 h-8">
+    <div className="flex gap-1 h-8 cursor-pointer">
       {COLORS.map((color) => (
         <div
           key={color}
           className="w-8"
           onClick={() => setCurrentColor(color)}
           style={{ backgroundColor: color }}
-        ></div>
+        >
+          <div className="text-white flex justify-center items-center mt-1">
+            {currentColor === color && "X"}
+          </div>
+        </div>
       ))}
     </div>
   );
