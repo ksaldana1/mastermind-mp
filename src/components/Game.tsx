@@ -1,6 +1,6 @@
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { Dispatch, useState } from "react";
-import type { Board, GameAction } from "../../game/logic";
+import type { Board, GameAction, User } from "../../game/logic";
 import { Color, COLORS, RowState } from "../../game/logic";
 
 interface GameProps {
@@ -17,14 +17,17 @@ export default function Game({ username, roomId }: GameProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 items-center justify-center h-full">
-      <Board
-        currentColor={currentColor}
-        board={gameState.board}
-        dispatch={dispatch}
-      />
-      <Picker setCurrentColor={setCurrentColor} />
-      currentColor: {currentColor}
+    <div className="flex justify-center gap-8">
+      <PlayerList players={gameState.users} />
+      <div className="flex flex-col gap-4 items-center justify-center h-full">
+        <Board
+          currentColor={currentColor}
+          board={gameState.board}
+          dispatch={dispatch}
+        />
+        <Picker setCurrentColor={setCurrentColor} />
+        currentColor: {currentColor}
+      </div>
     </div>
   );
 }
@@ -119,6 +122,19 @@ function Picker({ setCurrentColor }: PickerProps) {
           style={{ backgroundColor: color }}
         ></div>
       ))}
+    </div>
+  );
+}
+
+function PlayerList({ players }: { players: User[] }) {
+  return (
+    <div className="flex flex-col">
+      <p className="font-semibold italic underline">Players</p>
+      <ul>
+        {players.map((player, i) => (
+          <li key={`${player}-${i}`}>{player.id}</li>
+        ))}
+      </ul>
     </div>
   );
 }
