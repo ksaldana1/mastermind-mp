@@ -4,7 +4,7 @@ export default class Rooms implements Party.Server {
   connections: Record<string, number> = {};
   constructor(readonly room: Party.Room) {}
 
-  async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
+  onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
     connection.send(JSON.stringify(this.connections));
   }
 

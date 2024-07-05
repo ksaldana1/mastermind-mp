@@ -2,6 +2,7 @@ import { useGameRoom } from "@/hooks/useGameRoom";
 import { Dispatch, useState } from "react";
 import type { Board, GameAction, User, Results } from "../../game/logic";
 import { Color, COLORS, RowState } from "../../game/logic";
+import clsx from "clsx";
 
 interface GameProps {
   username: string;
@@ -66,6 +67,7 @@ function Row({
   row: RowState;
   index: number;
 }) {
+  const disableGuess = !row.state.every((cell) => cell !== null);
   return (
     <div className="flex">
       {row.state.map((cell, i) => (
@@ -88,13 +90,17 @@ function Row({
       ))}
       {row.type === "UNLOCKED" ? (
         <button
+          disabled={disableGuess}
           onClick={() =>
             dispatch({
               type: "GUESS",
               payload: { position: { row: index } },
             })
           }
-          className="bg-green-700 hover:bg-green-900 text-white font-bold py-2 px-4 rounded h-6 flex items-center ml-2"
+          className={clsx(
+            "bg-green-700 text-white font-bold py-2 px-4 rounded h-6 flex items-center ml-2",
+            disableGuess && "opacity-50 cursor-not-allowed"
+          )}
         >
           Guess
         </button>

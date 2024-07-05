@@ -22,6 +22,7 @@ export default class Server implements Party.Server {
     this.secret = generateCode();
     console.log("Room created:", room.id);
   }
+
   async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
     await this.updateConnections("connect", connection);
     this.gameState = gameUpdater(
@@ -34,6 +35,7 @@ export default class Server implements Party.Server {
     );
     this.room.broadcast(JSON.stringify(this.gameState));
   }
+
   async onClose(connection: Party.Connection) {
     await this.updateConnections("disconnect", connection);
     this.gameState = gameUpdater(
@@ -46,6 +48,7 @@ export default class Server implements Party.Server {
     );
     this.room.broadcast(JSON.stringify(this.gameState));
   }
+
   onMessage(message: string, sender: Party.Connection) {
     const action: ServerAction = {
       ...(JSON.parse(message) as Action),
@@ -56,6 +59,7 @@ export default class Server implements Party.Server {
     this.gameState = gameUpdater(action, this.gameState);
     this.room.broadcast(JSON.stringify(this.gameState));
   }
+
   async updateConnections(
     type: "connect" | "disconnect",
     connection: Party.Connection
