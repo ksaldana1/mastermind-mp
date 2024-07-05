@@ -3,18 +3,6 @@ import { Dispatch, useState } from "react";
 import type { Board, GameAction } from "../../game/logic";
 import { Color, COLORS, RowState } from "../../game/logic";
 
-/*
-  Render a board - 4x10 - 2x2 grid next to each row for result comparison
-  Render a piece picker - colors (red, yellow, green, blue, orange, purple)
-  Generate a random sequence of colors at beginning of round
-
-  Place a piece - with a chosen color place piece on a row
-  Check guess once 4 selections made - compare with random guess
-  Render the result comparison 
-
-  Go to next row until no more guesses (10 total)
-*/
-
 interface GameProps {
   username: string;
   roomId: string;
