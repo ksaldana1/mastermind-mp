@@ -1,3 +1,5 @@
+import { produce } from "immer";
+
 const addLog = (message: string, logs: GameState["log"]): GameState["log"] => {
   return [{ dt: new Date().getTime(), message: message }, ...logs].slice(
     0,
@@ -38,9 +40,12 @@ export type Code = [Color, Color, Color, Color];
 export type Cell = Color | null;
 export type Row = [Cell, Cell, Cell, Cell];
 
+type Peg = "black" | "white";
+type Results = Peg[];
+
 export type RowState =
   | { type: "UNLOCKED"; state: Row }
-  | { type: "LOCKED"; state: Code };
+  | { type: "LOCKED"; state: Code; results: Results };
 
 export type Board = [
   RowState,
@@ -81,57 +86,97 @@ export function generateBoard(): Board {
   }) as Board;
 }
 
+export function getResultPegs(secretCode: Code, guess: Code): Peg[] {
+  const blackPegs: Peg[] = [];
+  const whitePegs: Peg[] = [];
+
+  const secretCodeCopy: Array<Color | -1> = [...secretCode];
+  const guessCopy: Array<Color | -1> = [...guess];
+
+  // First pass: Check for black pegs (correct color and position)
+  for (let i = 0; i < secretCode.length; i++) {
+    if (guess[i] === secretCode[i]) {
+      blackPegs.push("black");
+      // Mark the pegs as checked
+      secretCodeCopy[i] = -1;
+      guessCopy[i] = -1;
+    }
+  }
+
+  // Second pass: Check for white pegs (correct color, wrong position)
+  for (let i = 0; i < guessCopy.length; i++) {
+    if (guessCopy[i] !== -1) {
+      const index = secretCodeCopy.indexOf(guessCopy[i]);
+      if (index !== -1) {
+        whitePegs.push("white");
+        secretCodeCopy[index] = -1;
+      }
+    }
+  }
+
+  return [...blackPegs, ...whitePegs];
+}
+
 export const initialGame = (): GameState => ({
   users: [],
   board: generateBoard(),
   log: addLog("Game Created!", []),
 });
 
-export type GameAction = {
-  type: "PIN_PLACED";
-  payload: {
-    position: {
-      row: number;
-      column: number;
-    };
-    color: Color;
-  };
-};
+export type GameAction =
+  | {
+      type: "PIN_PLACED";
+      payload: {
+        position: {
+          row: number;
+          column: number;
+        };
+        color: Color;
+      };
+    }
+  | { type: "GUESS"; payload: { position: { row: number } } };
 
 export const gameUpdater = (
   action: ServerAction,
   state: GameState
 ): GameState => {
   switch (action.type) {
-    case "USER_ENTERED":
+    case "USER_ENTERED": {
       return {
         ...state,
         users: [...state.users, action.user],
         log: addLog(`user ${action.user.id} joined 🎉`, state.log),
       };
+    }
 
-    case "USER_EXIT":
+    case "USER_EXIT": {
       return {
         ...state,
         users: state.users.filter((user) => user.id !== action.user.id),
         log: addLog(`user ${action.user.id} left 😢`, state.log),
       };
+    }
 
-    case "PIN_PLACED":
+    case "PIN_PLACED": {
       const { position, color } = action.payload;
+      const board = produce(state.board, (board) => {
+        board[position.row].state[position.column] = color;
+      });
       return {
         ...state,
-        board: state.board.with(position.row, {
-          type: "UNLOCKED",
-          state: state.board[position.row].state.with(
-            position.column,
-            color
-          ) as Row,
-        }) as Board,
+        board,
         log: addLog(
           `user ${action.user.id} placed ${color} on row ${position.row} column ${position.column}`,
           state.log
         ),
       };
+    }
+
+    case "GUESS": {
+      const { position } = action.payload;
+      return {
+        ...state,
+      };
+    }
   }
 };
