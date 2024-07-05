@@ -3,9 +3,8 @@ import type * as Party from "partykit/server";
 import { gameUpdater, initialGame, Action, ServerAction } from "../game/logic";
 import { GameState } from "../game/logic";
 
-interface ServerMessage {
-  state: GameState;
-}
+export const CONNECTION_PARTY_NAME = "rooms";
+export const CONNECTIONS_ROOM_ID = "active-connections";
 
 export default class Server implements Party.Server {
   private gameState: GameState;
@@ -13,7 +12,6 @@ export default class Server implements Party.Server {
   constructor(readonly room: Party.Room) {
     this.gameState = initialGame();
     console.log("Room created:", room.id);
-    console.log("Room target", this.gameState.target);
   }
   async onConnect(connection: Party.Connection, _ctx: Party.ConnectionContext) {
     await this.updateConnections("connect", connection);
@@ -47,12 +45,9 @@ export default class Server implements Party.Server {
     type: "connect" | "disconnect",
     connection: Party.Connection
   ) {
-    // get handle to a shared room instance of the "connections" party
-    const connectionsParty = this.room.context.parties.rooms;
-    const connectionsRoomId = "active-connections";
-    const connectionsRoom = connectionsParty.get(connectionsRoomId);
+    const connectionsParty = this.room.context.parties[CONNECTION_PARTY_NAME];
+    const connectionsRoom = connectionsParty.get(CONNECTIONS_ROOM_ID);
 
-    // notify room by making an HTTP POST request
     await connectionsRoom.fetch({
       method: "POST",
       body: JSON.stringify({

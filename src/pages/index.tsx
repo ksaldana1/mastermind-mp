@@ -111,7 +111,7 @@ export default function Home() {
                   },
                 });
                 setSetup({
-                  username: null,
+                  username: setup.username,
                   roomId: null,
                 });
               }}

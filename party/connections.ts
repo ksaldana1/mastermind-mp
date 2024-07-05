@@ -9,10 +9,8 @@ export default class Rooms implements Party.Server {
   }
 
   async onRequest(request: Party.Request) {
-    // read from storage
     this.connections =
       this.connections ?? (await this.room.storage.get("connections")) ?? {};
-    // update connection count
     if (request.method === "POST") {
       const update = await request.json<{
         roomId: string;
@@ -24,14 +22,10 @@ export default class Rooms implements Party.Server {
       if (update.type === "disconnect")
         this.connections[update.roomId] = Math.max(0, count - 1);
 
-      // notify any connected listeners
       this.room.broadcast(JSON.stringify(this.connections));
-
-      // save to storage
       await this.room.storage.put("connections", this.connections);
     }
 
-    // send connection counts to requester
     return new Response(JSON.stringify(this.connections));
   }
 }

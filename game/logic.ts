@@ -81,15 +81,12 @@ export function generateBoard(): Board {
   }) as Board;
 }
 
-// This is how a fresh new game starts out, it's a function so you can make it dynamic!
-// In the case of the guesser game we start out with a random target
 export const initialGame = (): GameState => ({
   users: [],
   board: generateBoard(),
   log: addLog("Game Created!", []),
 });
 
-// Here are all the actions we can dispatch for a user
 export type GameAction = {
   type: "PIN_PLACED";
   payload: {
