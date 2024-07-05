@@ -91,7 +91,6 @@ export default function Home() {
 
   return (
     <Layout>
-      <h1 className="text-2xl pb-5">Welcome to the Partykit starter!🎈</h1>
       <div>
         <form className="flex flex-col gap-4" onSubmit={handleFormSubmit}>
           <label
@@ -124,7 +123,7 @@ export default function Home() {
             id="roomid"
           />
           <button className="rounded border p-5 bg-yellow-400 group text-black shadow hover:shadow-lg transition-all duration-200 hover:scale-125">
-            <p className="font-bold hover:animate-wiggle">Join the party🎉</p>
+            <p className="font-bold hover:animate-wiggle">Create Lobby 🎉</p>
           </button>
         </form>
         <div className="mt-4">
