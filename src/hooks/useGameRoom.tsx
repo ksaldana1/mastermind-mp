@@ -1,12 +1,13 @@
 import usePartySocket from "partysocket/react";
 import { useState } from "react";
 import { GameState, Action } from "../../game/logic";
+import { PARTY_HOST } from "../../party";
 
 export const useGameRoom = (username: string, roomId: string) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
 
   const socket = usePartySocket({
-    host: process.env.NEXT_PUBLIC_SERVER_URL || "127.0.0.1:1999",
+    host: PARTY_HOST,
     room: roomId,
     id: username,
     onMessage(event: MessageEvent<string>) {
