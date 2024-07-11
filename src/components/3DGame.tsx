@@ -26,8 +26,8 @@ export default function Game({ username, roomId }: GameProps) {
         <Stage>
           <OrbitControls />
           <Suspense fallback={null}>
-            {new Array(1).fill(true).map((_, i) => (
-              <Row key={i} />
+            {new Array(10).fill(true).map((_, i) => (
+              <Row y={i} key={i} />
             ))}
           </Suspense>
         </Stage>
@@ -36,7 +36,7 @@ export default function Game({ username, roomId }: GameProps) {
   );
 }
 
-function Row() {
+function Row({ y }: { y: number }) {
   const colorMap = useLoader(TextureLoader, "Wood/Wood092_1K-JPG_Color.jpg");
   const { width, height, depth } = useControls("row", {
     height: {
@@ -54,7 +54,7 @@ function Row() {
   });
 
   return (
-    <group>
+    <group position-y={y * 0.2}>
       <mesh>
         <boxGeometry args={[width, height, depth]} />
         <meshBasicMaterial map={colorMap} />
