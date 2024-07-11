@@ -1,7 +1,7 @@
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { useControls } from "leva";
-import { Suspense, useState } from "react";
-import { Color } from "../../game/logic";
+import { Dispatch, Suspense, useState } from "react";
+import { Action, Color, GameState } from "../../game/logic";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { TextureLoader } from "three";
 import { Stage, OrbitControls } from "@react-three/drei";
@@ -27,7 +27,13 @@ export default function Game({ username, roomId }: GameProps) {
           <OrbitControls />
           <Suspense fallback={null}>
             {new Array(10).fill(true).map((_, i) => (
-              <Row y={i} key={i} />
+              <Row
+                y={i}
+                key={i}
+                dispatch={dispatch}
+                color={currentColor}
+                gameState={gameState}
+              />
             ))}
           </Suspense>
         </Stage>
@@ -36,7 +42,17 @@ export default function Game({ username, roomId }: GameProps) {
   );
 }
 
-function Row({ y }: { y: number }) {
+function Row({
+  y,
+  dispatch,
+  color,
+  gameState,
+}: {
+  y: number;
+  dispatch: Dispatch<Action>;
+  color: Color;
+  gameState: GameState;
+}) {
   const colorMap = useLoader(TextureLoader, "Wood/Wood092_1K-JPG_Color.jpg");
   const { width, height, depth } = useControls("row", {
     height: {
@@ -60,13 +76,39 @@ function Row({ y }: { y: number }) {
         <meshBasicMaterial map={colorMap} />
       </mesh>
       {new Array(4).fill(true).map((_, i) => {
-        return <Peg x={i} key={i} />;
+        return (
+          <Peg
+            x={i}
+            key={i}
+            color={gameState?.board?.at(y)?.state.at(i) || null}
+            onClick={() => {
+              dispatch({
+                type: "PIN_PLACED",
+                payload: {
+                  color,
+                  position: {
+                    column: i,
+                    row: y,
+                  },
+                },
+              });
+            }}
+          />
+        );
       })}
     </group>
   );
 }
 
-function Peg({ x }: { x: number }) {
+function Peg({
+  x,
+  onClick,
+  color,
+}: {
+  x: number;
+  onClick: () => void;
+  color: Color | null;
+}) {
   const { rotation, radius, height } = useControls("peg", {
     rotation: 1.5,
     radius: {
@@ -80,9 +122,9 @@ function Peg({ x }: { x: number }) {
   });
 
   return (
-    <mesh rotation-x={rotation} position-x={x * 0.25 - 0.38}>
+    <mesh onClick={onClick} rotation-x={rotation} position-x={x * 0.25 - 0.38}>
       <cylinderGeometry args={[radius, radius, height, 32]} />
-      <meshBasicMaterial color="black" />
+      <meshBasicMaterial color={color ?? "black"} />
     </mesh>
   );
 }
