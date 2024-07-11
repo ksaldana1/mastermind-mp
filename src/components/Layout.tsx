@@ -11,7 +11,10 @@ const Layout = ({ children }: LayoutProps) => {
     <main
       className={`${inter.className} flex flex-col items-center h-screen bg-stone-300 w-screen py-6 px-8`}
     >
-      <section className="border border-black rounded p-5 shadow bg-stone-50 w-full md:max-w-4xl">
+      <section
+        className="border border-black rounded p-5 shadow bg-stone-50 w-full "
+        style={{ height: "100%" }}
+      >
         {children}
       </section>
     </main>

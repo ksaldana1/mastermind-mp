@@ -1,7 +1,8 @@
 import Game from "@/components/Game";
+import Game3D from "@/components/3DGame";
 import Layout from "@/components/Layout";
 import { useLobbyCount } from "@/hooks/useLobbyCount";
-import { useRouter } from "next/router";
+import { Router, useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
@@ -100,26 +101,7 @@ export default function Home() {
     return (
       <>
         <Layout>
-          <Game roomId={setup.roomId} username={setup.username} />
-          <div className="flex justify-end">
-            <button
-              onClick={() => {
-                router.push({
-                  pathname: "/",
-                  query: {
-                    username: setup.username,
-                  },
-                });
-                setSetup({
-                  username: setup.username,
-                  roomId: null,
-                });
-              }}
-              className="bg-black rounded p-2 inline-block shadow text-xs text-stone-50 hover:animate-wiggle"
-            >
-              Leave Room
-            </button>
-          </div>
+          <Game3D roomId={setup.roomId} username={setup.username} />
         </Layout>
       </>
     );

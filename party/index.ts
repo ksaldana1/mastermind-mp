@@ -12,7 +12,8 @@ import { GameState } from "../game/logic";
 
 export const CONNECTION_PARTY_NAME = "rooms";
 export const CONNECTIONS_ROOM_ID = "active-connections";
-export const PARTY_HOST = "https://multiparty.ksaldana1.partykit.dev";
+export const PARTY_HOST =
+  "http://localhost:1999" || "https://multiparty.ksaldana1.partykit.dev";
 
 export default class Server implements Party.Server {
   private gameState: GameState;
