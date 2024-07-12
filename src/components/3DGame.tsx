@@ -3,7 +3,7 @@ import { useControls } from "leva";
 import { Dispatch, Suspense, useState } from "react";
 import { Action, Color, COLORS, GameState, ROWS_COUNT } from "../../game/logic";
 import { Canvas, useLoader } from "@react-three/fiber";
-import { TextureLoader } from "three";
+import { FrontSide, TextureLoader } from "three";
 import { Stage, OrbitControls } from "@react-three/drei";
 
 interface GameProps {
@@ -128,22 +128,33 @@ function Peg({
   onClick: () => void;
   color: Color | null;
 }) {
-  const { rotation, radius, height } = useControls("peg", {
+  const { rotation, radius, height, position } = useControls("peg", {
     rotation: 1.5,
     radius: {
       value: 0.05,
       step: 0.01,
     },
     height: {
-      value: 0.12,
+      value: 0.01,
       step: 0.01,
+    },
+    position: {
+      x: 0,
+      y: 0,
+      z: 0.05,
     },
   });
 
   return (
-    <mesh onClick={onClick} rotation-x={rotation} position-x={x * 0.25 - 0.38}>
+    <mesh
+      onClick={onClick}
+      rotation-x={rotation}
+      position-x={x * 0.25 - 0.38}
+      position-z={position.z}
+      position-y={position.y}
+    >
       <cylinderGeometry args={[radius, radius, height, 32]} />
-      <meshBasicMaterial color={color ?? "black"} />
+      <meshBasicMaterial side={FrontSide} color={color ?? "black"} />
     </mesh>
   );
 }
