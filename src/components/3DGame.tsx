@@ -1,7 +1,7 @@
 import { useGameRoom } from "@/hooks/useGameRoom";
 import { useControls } from "leva";
 import { Dispatch, Suspense, useState } from "react";
-import { Action, Color, GameState } from "../../game/logic";
+import { Action, Color, COLORS, GameState, ROWS_COUNT } from "../../game/logic";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { TextureLoader } from "three";
 import { Stage, OrbitControls } from "@react-three/drei";
@@ -16,6 +16,19 @@ export default function Game({ username, roomId }: GameProps) {
 
   const { gameState, dispatch } = useGameRoom(username, roomId);
 
+  const { rotation, position } = useControls("board", {
+    rotation: {
+      x: -0.2,
+      y: 0,
+      z: 0,
+    },
+    position: {
+      x: 0,
+      y: 0,
+      z: 0,
+    },
+  });
+
   if (!gameState) {
     return null;
   }
@@ -26,15 +39,21 @@ export default function Game({ username, roomId }: GameProps) {
         <Stage>
           <OrbitControls />
           <Suspense fallback={null}>
-            {new Array(10).fill(true).map((_, i) => (
-              <Row
-                y={i}
-                key={i}
-                dispatch={dispatch}
-                color={currentColor}
-                gameState={gameState}
-              />
-            ))}
+            <group
+              position={[position.x, position.y, position.z]}
+              rotation={[rotation.x, rotation.y, rotation.z]}
+            >
+              {new Array(ROWS_COUNT).fill(true).map((_, i) => (
+                <Row
+                  y={i}
+                  key={i}
+                  dispatch={dispatch}
+                  color={currentColor}
+                  gameState={gameState}
+                />
+              ))}
+              <ColorPicker onClick={(color: Color) => setCurrentColor(color)} />
+            </group>
           </Suspense>
         </Stage>
       </Canvas>
@@ -126,5 +145,44 @@ function Peg({
       <cylinderGeometry args={[radius, radius, height, 32]} />
       <meshBasicMaterial color={color ?? "black"} />
     </mesh>
+  );
+}
+
+function ColorPicker({ onClick }: { onClick: (color: Color) => void }) {
+  const { rotation, radius, height, position } = useControls("picker", {
+    rotation: {
+      x: 1.5,
+      y: 0,
+      z: 0,
+    },
+    radius: {
+      value: 0.05,
+      step: 0.01,
+    },
+    height: {
+      value: 0.02,
+      step: 0.01,
+    },
+    position: {
+      x: -0.7,
+      y: 0,
+    },
+  });
+  return (
+    <group>
+      {COLORS.map((color, i) => {
+        return (
+          <mesh
+            position={[position.x, 0.25 * i, 0]}
+            rotation={[rotation.x, rotation.y, rotation.z]}
+            key={color}
+            onClick={() => onClick(color)}
+          >
+            <cylinderGeometry args={[radius, radius, height]} />
+            <meshStandardMaterial color={color} />
+          </mesh>
+        );
+      })}
+    </group>
   );
 }
